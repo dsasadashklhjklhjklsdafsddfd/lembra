@@ -645,5 +645,8 @@ if (params.get('notif')) {
   history.replaceState(null, '', location.pathname);
 }
 
+// Pede ao navegador para não apagar os dados sozinho quando faltar espaço.
+navigator.storage?.persist?.().catch(() => {});
+
 render();
 tick();
