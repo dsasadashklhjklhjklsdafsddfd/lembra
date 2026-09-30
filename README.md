@@ -4,6 +4,8 @@ Lembretes, notas e quadros num lugar só. É tipo Google Keep + Trello, com aler
 
 ## Rodar
 
+No Windows: dois cliques em **Abrir Lembra.bat**. Ou pelo terminal:
+
 ```bash
 python serve.py
 ```

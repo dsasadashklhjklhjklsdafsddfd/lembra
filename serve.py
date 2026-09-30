@@ -40,12 +40,18 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
 class Server(socketserver.ThreadingMixIn, http.server.HTTPServer):
     daemon_threads = True
-    allow_reuse_address = True
+    allow_reuse_address = False  # no Windows, True deixaria dois servidores na mesma porta
 
 
 if __name__ == "__main__":
     url = f"http://localhost:{PORT}"
-    with Server(("127.0.0.1", PORT), Handler) as httpd:
+    try:
+        httpd = Server(("127.0.0.1", PORT), Handler)
+    except OSError:
+        # Já está rodando (ex.: clicou duas vezes no atalho): só abre o navegador.
+        webbrowser.open(url)
+        sys.exit(0)
+    with httpd:
         print(f"Lembra rodando em {url}  (Ctrl+C para parar)")
         if "--no-open" not in sys.argv:
             webbrowser.open(url)
