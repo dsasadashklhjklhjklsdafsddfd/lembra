@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Lembra</title>
+  <meta name="description" content="Lembretes, notas e quadros com alertas que realmente aparecem na tela.">
+  <meta name="theme-color" content="#0a0a0b">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300..800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="Lembra — início">
+        <img src="icons/icon.svg" alt="" width="30" height="30">
+        <span>Lembra</span>
+      </a>
+
+      <label class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        <input id="search" type="search" placeholder="Buscar lembretes, etiquetas…  ( / )" autocomplete="off" aria-label="Buscar">
+      </label>
+
+      <nav class="views" role="tablist" aria-label="Visualização">
+        <button role="tab" data-view="board">Quadro</button>
+        <button role="tab" data-view="notes">Notas</button>
+        <button role="tab" data-view="agenda">Próximos</button>
+      </nav>
+
+      <div class="top-actions">
+        <button id="btn-settings" class="icon-btn" title="Notificações e ajustes" aria-label="Notificações e ajustes">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+          <i class="dot" aria-hidden="true"></i>
+        </button>
+        <button id="btn-new" class="pill"><span>+ Novo</span></button>
+      </div>
+    </header>
+
+    <div id="banner" class="banner" hidden>
+      <span class="banner-icon">🔔</span>
+      <p><b>Ative as notificações</b> para os lembretes aparecerem na sua tela mesmo com o navegador minimizado.</p>
+      <button id="banner-enable" class="pill sm">Ativar agora</button>
+      <button id="banner-close" class="icon-btn sm" aria-label="Fechar aviso">×</button>
+    </div>
+
+    <main id="view" class="view"></main>
+  </div>
+
+  <!-- Editor -->
+  <dialog id="editor" class="sheet" aria-labelledby="ed-heading">
+    <form id="editor-form" novalidate>
+      <div class="sheet-head">
+        <span id="ed-heading" class="eyebrow">Novo lembrete</span>
+        <button type="button" id="ed-pin" class="icon-btn" aria-pressed="false" title="Fixar" aria-label="Fixar">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 3a1 1 0 0 1 .7 1.7L15 6.4v4.2l2.7 2.7a1 1 0 0 1-.7 1.7h-4v5a1 1 0 0 1-2 0v-5H7a1 1 0 0 1-.7-1.7L9 10.6V6.4L7.3 4.7A1 1 0 0 1 8 3h8z"/></svg>
+        </button>
+      </div>
+
+      <input name="title" class="title-input" placeholder="Título" autocomplete="off" aria-label="Título">
+      <textarea name="body" class="body-input" placeholder="Escreva uma nota…" rows="3" aria-label="Nota"></textarea>
+
+      <div id="ed-checklist" class="ed-checklist"></div>
+      <button type="button" id="ed-add-check" class="link-btn">+ Item de checklist</button>
+
+      <section id="ed-reminder" class="ed-section">
+        <h4>Lembrete</h4>
+        <div class="ed-row">
+          <input type="datetime-local" name="remindAt" aria-label="Data e hora do lembrete">
+          <select name="repeat" aria-label="Repetir">
+            <option value="none">Não repetir</option>
+            <option value="daily">Todo dia</option>
+            <option value="weekdays">Dias úteis</option>
+            <option value="weekly">Toda semana</option>
+            <option value="monthly">Todo mês</option>
+          </select>
+        </div>
+        <div id="ed-presets" class="presets">
+          <button type="button" data-preset="10m">Em 10 min</button>
+          <button type="button" data-preset="1h">Em 1 hora</button>
+          <button type="button" data-preset="today18">Hoje 18:00</button>
+          <button type="button" data-preset="tomorrow9">Amanhã 09:00</button>
+          <button type="button" data-preset="clear" class="muted">Sem lembrete</button>
+        </div>
+
+        <div class="atypes" role="radiogroup" aria-label="Tipo de alerta">
+          <label class="atype t-alarme">
+            <input type="radio" name="alertType" value="alarme">
+            <span class="atype-ico">🚨</span>
+            <span><b>Alarme</b><small>Tela cheia + sirene até você agir</small></span>
+          </label>
+          <label class="atype t-importante">
+            <input type="radio" name="alertType" value="importante">
+            <span class="atype-ico">🔔</span>
+            <span><b>Importante</b><small>Janela grande + toque repetido</small></span>
+          </label>
+          <label class="atype t-suave">
+            <input type="radio" name="alertType" value="suave">
+            <span class="atype-ico">💬</span>
+            <span><b>Suave</b><small>Aviso no canto + som leve</small></span>
+          </label>
+        </div>
+        <button type="button" id="ed-preview" class="link-btn">▶ Testar este alerta</button>
+      </section>
+
+      <section class="ed-section ed-grid">
+        <label>Lista <select name="columnId"></select></label>
+        <label>Etiquetas <input name="labels" placeholder="casa, trabalho" autocomplete="off"></label>
+      </section>
+
+      <div id="ed-colors" class="swatches" aria-label="Cor"></div>
+
+      <footer class="sheet-foot">
+        <button type="button" id="ed-delete" class="ghost danger">Excluir</button>
+        <span class="spacer"></span>
+        <button type="button" id="ed-cancel" class="ghost">Cancelar</button>
+        <button type="submit" class="pill">Salvar</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- Ajustes / notificações -->
+  <dialog id="settings" class="sheet" aria-labelledby="st-heading">
+    <div class="sheet-head">
+      <h2 id="st-heading">Notificações</h2>
+      <button type="button" id="st-close" class="icon-btn" aria-label="Fechar">×</button>
+    </div>
+
+    <div class="st-block">
+      <div class="st-line">
+        <div><b>Notificação do sistema</b><small>Aparece por cima de tudo, mesmo com o navegador minimizado.</small></div>
+        <span id="st-perm" class="status"></span>
+      </div>
+      <button id="st-enable" class="pill">Permitir notificações</button>
+      <p id="st-denied" class="hint" hidden>
+        O navegador bloqueou as notificações. Clique no <b>cadeado</b> ao lado do endereço → <b>Notificações</b> → <b>Permitir</b>, e recarregue a página.
+      </p>
+      <label class="switch"><input type="checkbox" id="st-system"><span></span>Enviar notificação do sistema junto com o alerta</label>
+    </div>
+
+    <div class="st-block">
+      <div class="st-line">
+        <div><b>Som</b><small id="st-audio"></small></div>
+      </div>
+      <label class="switch"><input type="checkbox" id="st-sound"><span></span>Tocar som nos alertas</label>
+      <label class="range">Volume <input type="range" id="st-volume" min="0" max="100" step="5"></label>
+    </div>
+
+    <div class="st-block">
+      <b>Testar os alertas</b>
+      <div class="test-grid">
+        <button class="test t-alarme" data-test="alarme"><span>🚨</span>Alarme</button>
+        <button class="test t-importante" data-test="importante"><span>🔔</span>Importante</button>
+        <button class="test t-suave" data-test="suave"><span>💬</span>Suave</button>
+      </div>
+      <button id="st-test-delay" class="ghost wide">Criar alarme de teste em 10 segundos</button>
+      <p class="hint">Dica: no Windows, desative o <b>“Não incomodar”</b> e deixe o navegador permitido em Configurações → Sistema → Notificações. Para ficar ainda melhor, instale o Lembra como app (ícone de instalar na barra de endereço).</p>
+    </div>
+
+    <div class="st-block st-row">
+      <button id="st-export" class="ghost">Exportar backup</button>
+      <label class="ghost file">Importar backup<input type="file" id="st-import" accept="application/json" hidden></label>
+    </div>
+  </dialog>
+
+  <div id="alert-layer" aria-live="assertive"></div>
+  <div id="toasts" aria-live="polite"></div>
+  <div id="snack" role="status"></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
